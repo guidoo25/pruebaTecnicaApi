@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 
 namespace database
 {
-    public class SeatEntity : BaseEntity
-    {
-        [Required]
-        public short Number { get; set; }
+public class SeatEntity : BaseEntity
+{
+    [Required]
+    public short Number { get; set; }
 
-        [Required]
-        public short RowNumber { get; set; }
+    [Required]
+    public short RowNumber { get; set; }
 
-        [ForeignKey("Room")]
-        public int RoomId { get; set; }
-        public RoomEntity Room { get; set; }
-    }
+    [ForeignKey("Room")]
+    public int RoomId { get; set; }
+    public RoomEntity Room { get; set; }
+}
 }
