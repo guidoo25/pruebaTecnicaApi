@@ -1,5 +1,6 @@
 using database;
 using Microsoft.EntityFrameworkCore;
+using pruebaTecnicaApi.Services;
 
 
 
@@ -15,6 +16,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<CineContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CineConnection")));
+builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<BillboardServices>();
+
 
 
 var app = builder.Build();

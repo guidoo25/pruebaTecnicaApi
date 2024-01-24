@@ -5,16 +5,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using database;
+using pruebaTecnicaApi.Services;
 
 [Route("api/[controller]")]
 [ApiController]
 public class CarteleraController : ControllerBase
 {
     private readonly CineContext _context;
+    private readonly BillboardServices _billboardServices;
 
-    public CarteleraController(CineContext context)
+    public CarteleraController(CineContext context, BillboardServices billboardServices)
     {
         _context = context;
+        _billboardServices = billboardServices;
     }
 
     // GET: api/Billboards
@@ -96,6 +99,20 @@ public async Task<ActionResult<BillboardEntity>> PostBillboard(BillboardDto bill
 
     return CreatedAtAction(nameof(GetBillboard), new { id = billboard.Id }, billboard);
 }
+    [HttpPut("cancel/{billboardId}")]
+    public async Task<IActionResult> CancelBillboardAndAllBookings(int billboardId)
+    {
+        try
+        {
+            await _billboardServices.CancelBillboardAndAllBookings(billboardId);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+
+            return BadRequest("An error occurred while cancelling the billboard and all bookings: " + ex.Message);
+        }
+    }
 
 
     private bool BillboardExists(int id)
