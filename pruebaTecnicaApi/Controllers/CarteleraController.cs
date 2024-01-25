@@ -73,11 +73,18 @@ public class CarteleraController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Handle exception using custom exception handler
+
             return CustomExceptionHandler.HandleException(ex);
         }
     }
 
+    /*
+    "Date": "2024-01-31T00:00:00",
+    "StartTime": "18:00:00",
+    "EndTime": "20:00:00",
+    "MovieId": 2,
+    "RoomId": 1
+} */
     [HttpPost]
     public async Task<ActionResult<BillboardEntity>> PostBillboard(BillboardDto billboardDto)
     {
@@ -92,7 +99,7 @@ public class CarteleraController : ControllerBase
             var room = await _context.RoomEntities.FindAsync(billboardDto.RoomId);
             if (room == null)
             {
-                return BadRequest(new { message = "no se encontro bilboardid." });
+                return BadRequest(new { message = "no se encontro room id." });
             }
 
             var billboard = new BillboardEntity
@@ -111,7 +118,6 @@ public class CarteleraController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Handle exception using custom exception handler
             return CustomExceptionHandler.HandleException<BillboardEntity>(ex);
         }
     }
