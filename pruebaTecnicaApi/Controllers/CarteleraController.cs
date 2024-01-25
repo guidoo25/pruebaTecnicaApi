@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using database;
 using pruebaTecnicaApi.Services;
+using System;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -24,81 +21,101 @@ public class CarteleraController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BillboardEntity>>> GetBillboards()
     {
-        return await _context.BillboardEntities.ToListAsync();
+        try
+        {
+            return await _context.BillboardEntities.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+    
+            return CustomExceptionHandler.HandleException<IEnumerable<BillboardEntity>>(ex);
+        }
     }
 
     // GET: api/Billboards/5
     [HttpGet("{id}")]
     public async Task<ActionResult<BillboardEntity>> GetBillboard(int id)
     {
-        var billboard = await _context.BillboardEntities.FindAsync(id);
-
-        if (billboard == null)
+        try
         {
-            return NotFound();
-        }
+            var billboard = await _context.BillboardEntities.FindAsync(id);
 
-        return billboard;
+            if (billboard == null)
+            {
+                return NotFound();
+            }
+
+            return billboard;
+        }
+        catch (Exception ex)
+        {
+
+            return CustomExceptionHandler.HandleException<BillboardEntity>(ex);
+        }
     }
 
     // PUT: api/Billboards/5
     [HttpPut("{id}")]
     public async Task<IActionResult> PutBillboard(int id, BillboardEntity billboard)
     {
-        if (id != billboard.Id)
-        {
-            return BadRequest();
-        }
-
-        _context.Entry(billboard).State = EntityState.Modified;
-
         try
         {
+            if (id != billboard.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(billboard).State = EntityState.Modified;
+
             await _context.SaveChangesAsync();
+
+            return NoContent();
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception ex)
         {
-            if (!BillboardExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
+            // Handle exception using custom exception handler
+            return CustomExceptionHandler.HandleException(ex);
         }
-
-        return NoContent();
-    }
-[HttpPost]
-public async Task<ActionResult<BillboardEntity>> PostBillboard(BillboardDto billboardDto)
-{
-    var movie = await _context.MovieEntities.FindAsync(billboardDto.MovieId);
-    if (movie == null)
-    {
-        return BadRequest(new { message = "No movie found with the specified ID." });
     }
 
-    var room = await _context.RoomEntities.FindAsync(billboardDto.RoomId);
-    if (room == null)
+    [HttpPost]
+    public async Task<ActionResult<BillboardEntity>> PostBillboard(BillboardDto billboardDto)
     {
-        return BadRequest(new { message = "No room found with the specified ID." });
+        try
+        {
+            var movie = await _context.MovieEntities.FindAsync(billboardDto.MovieId);
+            if (movie == null)
+            {
+                return BadRequest(new { message = "no se encontro el  movie id." });
+            }
+
+            var room = await _context.RoomEntities.FindAsync(billboardDto.RoomId);
+            if (room == null)
+            {
+                return BadRequest(new { message = "no se encontro bilboardid." });
+            }
+
+            var billboard = new BillboardEntity
+            {
+                Date = billboardDto.Date,
+                StartTime = billboardDto.StartTime,
+                EndTime = billboardDto.EndTime,
+                MovieId = billboardDto.MovieId,
+                RoomId = billboardDto.RoomId
+            };
+
+            _context.BillboardEntities.Add(billboard);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetBillboard), new { id = billboard.Id }, billboard);
+        }
+        catch (Exception ex)
+        {
+            // Handle exception using custom exception handler
+            return CustomExceptionHandler.HandleException<BillboardEntity>(ex);
+        }
     }
 
-    var billboard = new BillboardEntity
-    {
-        Date = billboardDto.Date,
-        StartTime = billboardDto.StartTime,
-        EndTime = billboardDto.EndTime,
-        MovieId = billboardDto.MovieId,
-        RoomId = billboardDto.RoomId
-    };
-
-    _context.BillboardEntities.Add(billboard);
-    await _context.SaveChangesAsync();
-
-    return CreatedAtAction(nameof(GetBillboard), new { id = billboard.Id }, billboard);
-}
     [HttpPut("cancel/{billboardId}")]
     public async Task<IActionResult> CancelBillboardAndAllBookings(int billboardId)
     {
@@ -109,14 +126,30 @@ public async Task<ActionResult<BillboardEntity>> PostBillboard(BillboardDto bill
         }
         catch (Exception ex)
         {
-
-            return BadRequest("An error occurred while cancelling the billboard and all bookings: " + ex.Message);
+            // Handle exception using custom exception handler
+            return CustomExceptionHandler.HandleException(ex);
         }
     }
-
 
     private bool BillboardExists(int id)
     {
         return _context.BillboardEntities.Any(e => e.Id == id);
+    }
+}
+
+public static class CustomExceptionHandler
+{
+    public static ActionResult<T> HandleException<T>(Exception ex)
+    {
+
+
+        return new BadRequestObjectResult(new { message = "An error occurred." });
+    }
+
+    public static IActionResult HandleException(Exception ex)
+    {
+
+
+        return new BadRequestObjectResult(new { message = "An error occurred." });
     }
 }

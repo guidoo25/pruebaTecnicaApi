@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using database;
@@ -16,14 +14,15 @@ public class SalaController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Rooms
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RoomEntity>>> GetRooms()
     {
         return await _context.RoomEntities.ToListAsync();
     }
 
-    // GET: api/Rooms/5
+
+
     [HttpGet("{id}")]
     public async Task<ActionResult<RoomEntity>> GetRoom(int id)
     {
@@ -37,7 +36,7 @@ public class SalaController : ControllerBase
         return room;
     }
 
-    // PUT: api/Rooms/5
+
     [HttpPut("{id}")]
     public async Task<IActionResult> PutRoom(int id, RoomEntity room)
     {
@@ -67,12 +66,17 @@ public class SalaController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Rooms
-// POST: api/Bookings
-[HttpPost]
+
+    [HttpPost]
 public async Task<ActionResult<BookingEntity>> PostBooking(BookingDto bookingDto)
 {
-    var billboard = await _context.BillboardEntities.FindAsync(bookingDto.BillboardId);
+    var customer = await _context.CustomerEntities.SingleOrDefaultAsync(c => c.Id == bookingDto.CustomerId);
+    if (customer == null)
+    {
+        return BadRequest("CustomerId no existe");
+    }
+
+    var billboard = await _context.BillboardEntities.SingleOrDefaultAsync(b => b.Id == bookingDto.BillboardId);
     if (billboard == null)
     {
         return BadRequest("BillboardId no existe");
@@ -91,6 +95,8 @@ public async Task<ActionResult<BookingEntity>> PostBooking(BookingDto bookingDto
 
     return CreatedAtAction(nameof(GetRoom), new { id = booking.Id }, booking);
 }
+
+
 
 
     private bool RoomExists(int id)

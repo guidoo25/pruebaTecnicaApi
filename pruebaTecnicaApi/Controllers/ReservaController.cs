@@ -1,8 +1,9 @@
 ﻿using database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using pruebaTecnicaApi.Services;
-using pruebaTecnicaApi.Services;
+
 
 namespace pruebaTecnicaApi.Controllers
 {
@@ -37,6 +38,20 @@ namespace pruebaTecnicaApi.Controllers
             return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
         }
 
+    //ejemplo  de consulta  2024-01-01   end:2024-01-30
+    [HttpGet("HorrorBookings")]
+    public async Task<ActionResult<IEnumerable<BookingEntity>>> GetHorrorBookings(DateTime startDate, DateTime endDate)
+    {
+        var bookings = await _context.BookingEntities
+            .Include(b => b.Billboard)
+            .ThenInclude(b => b.Movie)
+            .Where(b => b.Date >= startDate && b.Date <= endDate && b.Billboard.Movie.Genre == MovieGenreEnum.HORROR)
+            .ToListAsync();
+
+        return bookings;
+    }
+
+
         // GET: api/Bookings/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BookingEntity>> GetBooking(int id)
@@ -63,6 +78,8 @@ namespace pruebaTecnicaApi.Controllers
                 return BadRequest("Un error Ocurrio: " + ex.Message);
             }
         }
+
+        
 
     }
 }

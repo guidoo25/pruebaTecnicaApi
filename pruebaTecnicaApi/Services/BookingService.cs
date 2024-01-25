@@ -1,4 +1,5 @@
 ﻿using database;
+using Microsoft.EntityFrameworkCore;
 
 namespace pruebaTecnicaApi.Services
 {
@@ -10,6 +11,7 @@ namespace pruebaTecnicaApi.Services
         {
             _context = context;
         }
+
 
         public async Task CancelBookingAndInactivateSeat(int bookingId, int seatId)
         {
